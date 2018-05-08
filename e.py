@@ -1,21 +1,22 @@
 import time
 from dronekit import connect, VehicleMode, LocationGlobalRelative, Command, LocationGlobal
 from pymavlink import mavutil
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 #import dronekit_sitl
 
-#GPIO.setmode(GPIO.BCM)
+GPIO.setmode(GPIO.BCM)
 mover = int(0)
 
 TRIG = 2
 ECHO = 3
 
+looptime = 0
 
-#GPIO.setup(TRIG,GPIO.OUT)
-#GPIO.setup(ECHO,GPIO.IN)
+GPIO.setup(TRIG,GPIO.OUT)
+GPIO.setup(ECHO,GPIO.IN)
 
-sitl=dronekit_sitl.start_default(20.737641,-103.457018)
-connection_string = sitl.connection_string
+#sitl=dronekit_sitl.start_default(20.737641,-103.457018)
+#connection_string = sitl.connection_string
 
 def arm_and_takeoff(TargetAltitude):
 
@@ -61,7 +62,7 @@ def set_velocity_body(vehicle, vx, vy, vz):
     vehicle.flush()
 
 def get_distance():
-"""    GPIO.output(TRIG,False)
+    GPIO.output(TRIG,False)
     print "Waiting for sensor"
     time.sleep(2)
 
@@ -89,9 +90,14 @@ def get_distance():
     GPIO.setup(ECHO,GPIO.IN)
 
     return dist
-"""
-    return 100
+    """
+    global looptime
+    looptime = looptime + 1
+    if looptime > 5:
+        return 10
 
+    return 100
+    """
 #This function is coordinated with "set_velocity_body", this is the one that reads the key that is being pressed.
 #This part of the code is the one that puts the drone into movement with the keys.
 #def key(event):
@@ -105,12 +111,12 @@ def get_distance():
      #   elif event.keysym == 'Left':set_velocity_body(drone, 0,-5,0)
       #  elif event.keysym == 'Right':set_velocity_body(drone, 0,5,0)
 
-#drone = connect('/dev/ttyAMA0', baud=57600, wait_ready=True)
+drone = connect('/dev/ttyAMA0', baud=57600, wait_ready=True)
 #drone = connect('udpout:10.0.1.22:14551' , wait_ready=True)
-drone = connect('127.0.0.1:14551' , wait_ready=True)
+#drone = connect('127.0.0.1:14551' , wait_ready=True)
 
 # Take off to 10 m altitude
-arm_and_takeoff(2.10)
+#arm_and_takeoff(2.10)
 
 # Read the keyboard with tkinter: a little white board appears and you have to select the square to click the keys so they...
 #... start reading the code and the movement.
@@ -121,8 +127,8 @@ arm_and_takeoff(2.10)
 
 for i in range(10):
 
-    distance = get_distance()
-	print "Distance:",distance,"cm"
+        distance = get_distance()
+	print ("Distance:",distance,"cm")
 	if distance <= 51:
 	        print"La distancia es menor a medio metro"
 	        print"El dron corre peligro de chocar"
@@ -132,8 +138,8 @@ for i in range(10):
 	        print"El dron no corre peligro"
 	        mover = 1
 
-	if mover == 1: set_velocity_body(drone, 0,0,0)
-	elif mover  == 0: set_velocity_body(drone, -1,0,0)
+	#if mover == 1: set_velocity_body(drone, 0,0,0)
+	#elif mover  == 0: set_velocity_body(drone, -1,0,0)
 	#elif event.keysym == 'Left':set_velocity_body(drone, 0,-1,0)
 	#elif event.keysym == 'Right':set_velocity_body(drone, 0,1,0)
 	time.sleep(3)
@@ -142,14 +148,14 @@ for i in range(10):
 
 
 print ("Returning home")
-drone.mode = VehicleMode("RTL")
+#drone.mode = VehicleMode("RTL")
 
 
 #Retrieving the voltage of the battery from APM/Mission Planner and showing it to the user.
 DroneBattery= drone.battery.voltage
-print ('Drone Battery:', DroneBattery, 'V')
+print ('Drone Battery: %s V' % DroneBattery)
 
 #Exiting the code.
 drone.close()
 
-sitl.stop()
+#sitl.stop()
